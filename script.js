@@ -35,7 +35,7 @@ function Cell() {
   return { drawMarker, getValue };
 }
 
-function GameController(playerOne = "Player 1", playerTwo = "Player2") {
+function GameController(playerOne = "Player 1", playerTwo = "Player 2") {
   const gameboard = Gameboard();
   const players = [
     { name: playerOne, marker: 1 },
@@ -59,10 +59,39 @@ function GameController(playerOne = "Player 1", playerTwo = "Player2") {
   };
 
   printGameState();
-  return { getActivePlayer, playRound };
+  return { getActivePlayer, playRound, getBoard: gameboard.getBoard };
 }
 
-const game = GameController();
+function ScreenController() {
+  const game = GameController();
 
-game.playRound(0, 0);
-game.playRound(0, 2);
+  const playerTurnDiv = document.querySelector(".turn");
+  const boardDiv = document.querySelector(".board");
+  const updateScreen = () => {
+    boardDiv.textContent = "";
+    const board = game.getBoard();
+    const activePlayer = game.getActivePlayer();
+    playerTurnDiv.textContent = `${activePlayer.name}'s turn...'`;
+    board.forEach((row, rowIndex) => {
+      row.forEach((cell, columnIndex) => {
+        const cellButton = document.createElement("button");
+        cellButton.classList.add("cell");
+        cellButton.dataset.column = columnIndex;
+        cellButton.dataset.row = rowIndex;
+        cellButton.textContent = cell.getValue();
+        boardDiv.appendChild(cellButton);
+      });
+    });
+  };
+  function clickHandlerButton(e) {
+    const selectedColumn = e.target.dataset.column;
+    const selectedRow = e.target.dataset.row;
+    if (!selectedColumn && !selectedRow) return;
+    game.playRound(selectedRow, selectedColumn);
+    updateScreen();
+  }
+  boardDiv.addEventListener("click", clickHandlerButton);
+
+  updateScreen();
+}
+ScreenController();
